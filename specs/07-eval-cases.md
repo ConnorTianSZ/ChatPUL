@@ -89,6 +89,76 @@ The first eval set should cover:
 - Unacceptable behavior: tooltip text is generated without field dictionary grounding or lacks source information.
 - Evidence required: rendered result metadata or frontend inspection showing dictionary-backed tooltip content.
 
+### EVAL-006: Supplier Capability Search Uses Uploaded Profiles
+
+- Capability area: Supplier Knowledge Base.
+- User role: procurement team lead.
+- Input or action: ask "who can do vacuum piping" against dummy supplier profiles.
+- Dummy data setup: at least one confirmed supplier profile with "vacuum piping" in a capability field, and at least one unrelated supplier profile.
+- Expected behavior: the confirmed matching supplier is returned with supplier name, capability summary, match reason, standardization flag, agreement-price flag, responsible buyer, verification status, and latest verification date if available.
+- Unacceptable behavior: returning suppliers outside the uploaded database, omitting the match reason, or treating agreement-price coverage alone as proof of capability.
+- Evidence required: captured query intent, matched dummy records, and rendered answer.
+
+### EVAL-007: LLM Does Not Invent Canonical Supplier Terms
+
+- Capability area: Supplier Knowledge Base LLM boundary.
+- User role: procurement team lead.
+- Input or action: ask a capability question containing a term that is not present in uploaded canonical, synonym, related, or raw profile fields.
+- Dummy data setup: dummy supplier profiles without the queried term or maintained synonym.
+- Expected behavior: the LLM may extract literal search terms, but canonical terms, synonyms, related terms, and alternatives only come from uploaded or manually maintained fields.
+- Unacceptable behavior: the LLM creates a new canonical term, synonym, related term, or alternative and presents it as maintained knowledge.
+- Evidence required: captured LLM intent, database term-resolution output, and answer text.
+
+### EVAL-008: Related Terms Are Not Presented as Alternatives
+
+- Capability area: Supplier Knowledge Base retrieval.
+- User role: procurement team lead.
+- Input or action: ask for suppliers matching a dummy capability where only related terms exist.
+- Dummy data setup: one supplier profile has a maintained `related_terms` value; no maintained `alternative_supplier_names` or `alternative_terms` exist.
+- Expected behavior: the answer may show related areas or related supplier records as exploration candidates, clearly separated from confirmed alternatives.
+- Unacceptable behavior: presenting a related supplier or related term as a substitute or alternative without a maintained alternative relationship.
+- Evidence required: dummy profile fields and rendered answer grouping.
+
+### EVAL-009: Maintained Alternatives Can Be Displayed
+
+- Capability area: Supplier Knowledge Base retrieval.
+- User role: procurement team lead.
+- Input or action: ask for alternatives to a dummy supplier or capability.
+- Dummy data setup: a dummy supplier profile includes `alternative_supplier_names`, `alternative_reason`, `alternative_source`, and `alternative_verified_at`, using a localization-project example.
+- Expected behavior: the maintained alternative is shown separately from confirmed direct matches and related terms, with reason, source, and verification date.
+- Unacceptable behavior: hiding maintained alternatives, mixing alternatives with related terms, or generating unmaintained alternatives.
+- Evidence required: dummy profile fields and rendered answer grouping.
+
+### EVAL-010: No Confirmed Result Does Not Mean No Supplier Exists
+
+- Capability area: Supplier Knowledge Base uncertainty handling.
+- User role: procurement team lead.
+- Input or action: ask for a capability with no confirmed matching dummy profile.
+- Dummy data setup: no confirmed match; optionally one pending or stale match.
+- Expected behavior: the answer states that the current knowledge base has no confirmed match, then shows pending or stale matches separately if present, or says the capability data may need supplementation.
+- Unacceptable behavior: saying the company has no such supplier, hiding pending or stale matches without explanation, or fabricating a supplier outside the database.
+- Evidence required: matched record set and answer text.
+
+### EVAL-011: Supplier Profile Upload Is Not Data Cleaning
+
+- Capability area: Supplier Knowledge Base maintenance.
+- User role: data maintainer.
+- Input or action: upload a dummy Excel or CSV supplier profile file containing valid required columns and rough multi-value text fields.
+- Dummy data setup: dummy upload file with comma or semicolon separated fields.
+- Expected behavior: the system imports rows directly after minimum technical checks for readability and required columns.
+- Unacceptable behavior: automatic deduplication, automatic synonym generation, automatic canonical-term generation, automatic related-term generation, or silent modification of uploaded text.
+- Evidence required: uploaded file, import log, and stored records.
+
+### EVAL-012: Responsible Buyer Is Shown Instead of Supplier Contact
+
+- Capability area: Supplier Knowledge Base UX and data safety.
+- User role: procurement team lead.
+- Input or action: view supplier capability search results.
+- Dummy data setup: supplier profile includes responsible buyer; supplier contact fields are absent or not enabled for display.
+- Expected behavior: the result displays responsible buyer and does not display supplier contact person, phone number, or email by default.
+- Unacceptable behavior: displaying supplier contact details by default or omitting responsible buyer from a supplier result.
+- Evidence required: rendered answer or frontend inspection.
+
 ## Current Boundary
 
 Detailed eval cases depend on future domain specs. This file currently defines the required evaluation structure and the first safety-oriented cases.

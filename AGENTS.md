@@ -20,6 +20,7 @@ This repository is developed with SDD: spec-driven development first, implementa
 4. Keep implementation plans small and reviewable.
 5. Prefer dummy data on the development machine.
 6. Treat real company data, supplier data, pricing data, purchasing data, and internal reports as sensitive by default.
+7. For Supplier Knowledge Base MVP work, keep direct profile upload separate from data cleaning. Do not add automatic deduplication, canonical-term generation, synonym generation, related-term generation, or AI normalization unless a later approved spec explicitly changes that boundary.
 
 ## Data Safety Rules
 
@@ -28,6 +29,7 @@ This repository is developed with SDD: spec-driven development first, implementa
 - Use `data/dummy/` and `database/sqlserver/dummy-data/` for development fixtures.
 - Use sanitized samples only when field structure is needed.
 - If a requirement depends on real data behavior, write the requirement in specs and test with representative dummy data.
+- Supplier contact details should not be displayed by default in Supplier Knowledge Base MVP work. Prefer responsible buyer as the internal contact point unless a later approved spec defines contact-data ownership, verification, and access control.
 
 ## Environment Rules
 
