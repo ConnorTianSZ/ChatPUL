@@ -4,6 +4,8 @@
 
 The product should be database-backed. SQL Server is the initial target because the company test environment has Microsoft SQL Server 2022 Express and SSMS 20.x installed.
 
+For ChatBI, the planned source path is SAP export data converted into database tables. The database does not exist yet, so initial schema work should be driven by approved ChatBI tools, field dictionary needs, and existing PowerBI/SAP export structure.
+
 ## Relationship With PowerBI
 
 Existing PowerBI work should not be discarded.
@@ -28,9 +30,19 @@ Potential view categories:
 - PowerBI compatibility views.
 - Data quality inspection views.
 
+ChatBI tools should prefer stable tables, views, stored procedures, or backend-owned query logic. The LLM must not write SQL directly.
+
+## Field Dictionary
+
+ChatBI should expose only approved table headers and hard-coded field meanings to the LLM. Field meanings should be maintained in the system as durable metadata, not inferred from raw database rows.
+
+The field dictionary should connect business language to database structure after the schema exists.
+
 ## Dummy Data Requirement
 
 Development uses dummy data only. Dummy data must preserve useful structure but must not copy real supplier names, prices, project details, internal report values, or confidential identifiers.
+
+For ChatBI flow testing, dummy data may include synthetic supplier names, project numbers, purchase order numbers, and prices. These values must be clearly artificial.
 
 ## Current Boundary
 
