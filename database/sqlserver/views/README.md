@@ -1,6 +1,6 @@
 # SQL Server Views
 
-Future SQL views will live here.
+SQL view definitions and view notes live here.
 
 Expected uses:
 
@@ -8,4 +8,6 @@ Expected uses:
 - PowerBI-compatible data shapes.
 - Data quality inspection.
 
-Current boundary: no views are approved yet.
+Current approved view:
+
+- `chatbi.vw_po_item_reporting`, defined by `database/sqlserver/migrations/001_create_chatbi_dummy_reporting.sql`.

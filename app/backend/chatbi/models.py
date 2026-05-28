@@ -1,6 +1,7 @@
+from datetime import date as date_type
 from typing import Annotated, Literal, Union
 
-from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, field_validator, model_validator
 
 
 DateField = Literal[
@@ -20,6 +21,18 @@ class TimeRange(StrictModel):
     date_field: DateField = "doc_date"
     from_: str | None = Field(default=None, alias="from", pattern=r"^\d{4}-\d{2}-\d{2}$")
     to: str | None = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+
+    @field_validator("from_", "to")
+    @classmethod
+    def validate_calendar_date(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        try:
+            y, m, d = map(int, v.split("-"))
+            date_type(y, m, d)
+        except (ValueError, TypeError):
+            raise ValueError(f"invalid calendar date: {v}")
+        return v
 
 
 class CommonFilters(StrictModel):
@@ -64,6 +77,14 @@ class LeadTimeArguments(StrictModel):
     group_by: Literal["none", "buyer", "manufacturer", "supplier", "month"]
     time_range: TimeRange | None = None
     filters: CommonFilters | None = None
+
+    @model_validator(mode="after")
+    def reject_statistical_delivery_date(self):
+        if self.time_range is not None and self.time_range.date_field == "statistical_delivery_date":
+            raise ValueError(
+                "date_field 'statistical_delivery_date' is not supported for lead_time_summary"
+            )
+        return self
 
 
 class AutoPoRatioArguments(StrictModel):

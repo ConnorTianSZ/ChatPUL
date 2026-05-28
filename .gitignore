@@ -27,6 +27,8 @@ build/
 Thumbs.db
 .vscode/
 .idea/
+.claude/
+.trae/
 
 # Data safety
 data/raw/

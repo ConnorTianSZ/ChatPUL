@@ -5,7 +5,7 @@ from pydantic import ValidationError
 
 from app.backend.chatbi.executor import execute_tool_call
 from app.backend.chatbi.models import parse_tool_call
-from app.backend.chatbi.repository import DummyPoItemRepository
+from app.backend.chatbi.repository import get_po_item_repository
 
 
 app = FastAPI(title="ChatPUL Backend")
@@ -18,5 +18,5 @@ def execute_chatbi_tool(payload: dict[str, Any]) -> dict[str, Any]:
     except ValidationError as exc:
         raise HTTPException(status_code=422, detail=exc.errors()) from exc
 
-    repository = DummyPoItemRepository()
+    repository = get_po_item_repository()
     return execute_tool_call(tool_call, repository)

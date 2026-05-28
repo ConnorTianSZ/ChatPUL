@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+import app.backend.main as backend_main
 from app.backend.main import app
 
 
@@ -40,3 +41,28 @@ def test_execute_tool_endpoint_rejects_invalid_shape_before_execution():
     body = response.json()
     assert body["detail"][0]["type"] == "extra_forbidden"
 
+
+def test_execute_tool_endpoint_uses_configured_repository(monkeypatch):
+    class StubRepository:
+        @property
+        def metadata(self):
+            return {
+                "id": "stub_sqlserver",
+                "version": "test",
+                "is_dummy": True,
+                "schema": "chatbi",
+                "view": "vw_po_item_reporting",
+            }
+
+        def list_rows(self):
+            return []
+
+    monkeypatch.setattr(backend_main, "get_po_item_repository", lambda: StubRepository())
+
+    response = client.post(
+        "/api/chatbi/tools/execute",
+        json={"tool": "supplier_dimension_summary", "arguments": {"group_by": "supplier"}},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["source_trace"]["dataset"]["id"] == "stub_sqlserver"

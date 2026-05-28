@@ -41,6 +41,29 @@ def test_accepts_valid_structured_tool_call():
                 "filters": {"wbs_scope": "project_only"},
             },
         },
+        {
+            "tool": "lead_time_summary",
+            "arguments": {
+                "lead_time_type": "both",
+                "group_by": "buyer",
+                "time_range": {
+                    "date_field": "statistical_delivery_date",
+                    "from": "2024-01-01",
+                    "to": "2024-12-31",
+                },
+            },
+        },
+        {
+            "tool": "supplier_dimension_summary",
+            "arguments": {
+                "group_by": "supplier",
+                "time_range": {
+                    "date_field": "doc_date",
+                    "from": "2026-99-99",
+                    "to": "2026-12-31",
+                },
+            },
+        },
     ],
 )
 def test_rejects_unapproved_or_sql_shaped_tool_calls(payload):

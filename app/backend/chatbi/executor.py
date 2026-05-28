@@ -23,7 +23,7 @@ from app.backend.chatbi.models import (
     filters_or_default,
     time_range_or_default,
 )
-from app.backend.chatbi.repository import DummyPoItemRepository
+from app.backend.chatbi.repository import PoItemRepository
 
 
 DATE_FIELD_HEADERS = {
@@ -46,7 +46,7 @@ GROUP_FIELD_NAMES = {
 }
 
 
-def execute_tool_call(call: ToolCall, repository: DummyPoItemRepository) -> dict[str, Any]:
+def execute_tool_call(call: ToolCall, repository: PoItemRepository) -> dict[str, Any]:
     rows = repository.list_rows()
     filters = filters_or_default(call.arguments.filters)
     time_range = time_range_or_default(call.arguments.time_range)
@@ -141,7 +141,7 @@ def execute_dimension_tool(
     rows: list[dict[str, str]],
     filters: CommonFilters,
     time_range: TimeRange,
-    repository: DummyPoItemRepository,
+    repository: PoItemRepository,
 ) -> dict[str, Any]:
     grouped: dict[str, list[dict[str, str]]] = defaultdict(list)
     for row in rows:
@@ -190,7 +190,7 @@ def execute_auto_po_ratio_tool(
     rows: list[dict[str, str]],
     filters: CommonFilters,
     time_range: TimeRange,
-    repository: DummyPoItemRepository,
+    repository: PoItemRepository,
 ) -> dict[str, Any]:
     field_names = fields_for_auto_po_ratio_tool(call.arguments.group_by)
     result: dict[str, Any] = {
@@ -255,7 +255,7 @@ def execute_lead_time_tool(
     rows: list[dict[str, str]],
     filters: CommonFilters,
     time_range: TimeRange,
-    repository: DummyPoItemRepository,
+    repository: PoItemRepository,
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "tool": call.tool,
@@ -370,7 +370,7 @@ def build_source_trace(
     filters: CommonFilters,
     time_range: TimeRange,
     field_names: list[str],
-    repository: DummyPoItemRepository,
+    repository: PoItemRepository,
 ) -> dict[str, Any]:
     source_field_names = dedupe_fields(field_names + active_filter_field_names(filters) + [time_range.date_field])
     return {
