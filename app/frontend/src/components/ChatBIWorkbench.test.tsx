@@ -1,10 +1,9 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { ReactElement } from "react";
+import { fireEvent, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { ChatBIHttpError } from "../api/chatbiClient";
 import { ChatBIWorkbench } from "./ChatBIWorkbench";
+import { renderWithClient } from "../test/renderWithClient";
 import type { ChatBIAskResponse } from "../types/chatbi";
 
 const successfulResponse: ChatBIAskResponse = {
@@ -37,7 +36,7 @@ const successfulResponse: ChatBIAskResponse = {
 
 describe("ChatBIWorkbench", () => {
   it("submits a dummy question and shows summaries, results, and source trace", async () => {
-    renderWorkbench(<ChatBIWorkbench askClient={async () => successfulResponse} />);
+    renderWithClient(<ChatBIWorkbench askClient={async () => successfulResponse} />);
 
     fireEvent.change(screen.getByLabelText("ChatBI question"), {
       target: { value: "show auto PO ratio by manufacturer" },
@@ -51,7 +50,7 @@ describe("ChatBIWorkbench", () => {
   });
 
   it("shows a structured unsupported metric error instead of a fabricated result", async () => {
-    renderWorkbench(
+    renderWithClient(
       <ChatBIWorkbench
         askClient={async () => {
           throw new ChatBIHttpError(422, { unsupported_reason: "price trend is outside approved ChatBI scope" });
@@ -68,14 +67,3 @@ describe("ChatBIWorkbench", () => {
     expect(screen.queryByText("DummyMfr-X")).not.toBeInTheDocument();
   });
 });
-
-function renderWorkbench(node: ReactElement) {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      mutations: { retry: false },
-      queries: { retry: false },
-    },
-  });
-
-  return render(<QueryClientProvider client={queryClient}>{node}</QueryClientProvider>);
-}

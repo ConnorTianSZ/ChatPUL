@@ -46,6 +46,7 @@ The Vite dev server proxies `/api` to `http://127.0.0.1:8000`. The default front
 
 ```powershell
 npm test
+npm run test:acceptance
 npm run typecheck
 npm run build
 ```

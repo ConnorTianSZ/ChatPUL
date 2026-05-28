@@ -78,7 +78,7 @@ export function ChatBIWorkbench({ askClient = askChatBI }: ChatBIWorkbenchProps)
           aria-label="ChatBI question"
           value={question}
           onChange={(event) => setQuestion(event.target.value)}
-          autoSize={{ minRows: 3, maxRows: 5 }}
+          rows={3}
           placeholder="Ask an approved dummy ChatBI question"
         />
         <div className="question-actions">
