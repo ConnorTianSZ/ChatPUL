@@ -23,6 +23,7 @@ This repo is only the project skeleton and spec base. Application code, database
 ## Durable Constraints
 
 - Database-backed data management is a core requirement.
+- Backend development uses Python + FastAPI + pytest unless a later approved spec changes the stack.
 - Existing PowerBI assets should remain useful.
 - Development must use dummy data to prevent accidental company data upload.
 - Company-environment testing targets SQL Server 2022 Express and SSMS 20.x.

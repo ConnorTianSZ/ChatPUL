@@ -12,7 +12,9 @@ The initial users are procurement leaders and team leads. The first version shou
 
 ChatBI should be similar in spirit to Tencent-style ChatBI products, but adapted for internal company compliance and local data control.
 
-The backend should run locally or inside the company-approved environment. The database will be built later from SAP exports converted into database tables.
+The backend should run locally or inside the company-approved environment. The approved backend stack is Python + FastAPI + pytest. The database will be built later from SAP exports converted into database tables.
+
+FastAPI endpoints should expose backend-owned BI tools and orchestration APIs only after the corresponding tool schemas, dummy data, and evaluation cases are approved. pytest should be used for backend unit tests, fixture tests, and future evaluation harness tests.
 
 ## AI Boundary
 
