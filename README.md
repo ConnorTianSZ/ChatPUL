@@ -11,9 +11,11 @@ Implemented so far:
 - ChatBI backend tool execution against synthetic PO-item dummy data.
 - Strict structured validation for the four approved ChatBI MVP tools.
 - Minimal ChatBI field dictionary metadata for labels, future tooltips, and source traceability.
+- SQL Server dummy reporting assets for the approved ChatBI PO-item shape.
+- Optional DeepSeek V4 Flash intent parsing for dummy-data local testing.
 - Pytest coverage for fixture generation, tool validation, calculations, API behavior, and source trace structure.
 
-No SQL Server schema, SQL import path, frontend UI, real LLM integration, Supplier Knowledge Base implementation, or real company data handling has been implemented yet.
+No frontend UI, Supplier Knowledge Base implementation, production SQL import path, or real company data handling has been implemented yet.
 
 ## Confirmed Technical Stack
 
@@ -23,7 +25,7 @@ The approved backend stack is Python + FastAPI + pytest.
 - pytest is the default test runner for backend code, fixture generators, and evaluation harnesses.
 - SQL Server remains the target database platform for company-environment validation.
 
-The first approved backend endpoint is `POST /api/chatbi/tools/execute`, scoped by `specs/09-chatbi-backend-tool-slice.md`. Database schema work still requires a later approved spec and implementation plan.
+The first approved backend endpoints are `POST /api/chatbi/tools/execute` and `POST /api/chatbi/ask`, scoped by `specs/09-chatbi-backend-tool-slice.md` and `specs/10-chatbi-sqlserver-and-llm-milestone.md`.
 
 ## Product Direction
 

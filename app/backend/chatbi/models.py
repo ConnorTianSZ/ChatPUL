@@ -46,6 +46,10 @@ class CommonFilters(StrictModel):
     mrp_types: list[str] | None = None
 
 
+class ChatBIAskRequest(StrictModel):
+    question: str = Field(min_length=1)
+
+
 class CountSort(StrictModel):
     by: Literal["po_item_count", "group_key"] | None = None
     direction: Literal["asc", "desc"] = "desc"
