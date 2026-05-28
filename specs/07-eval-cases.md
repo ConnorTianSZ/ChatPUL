@@ -33,6 +33,7 @@ The first eval set should cover:
 - LLM boundary enforcement.
 - Supplier knowledge retrieval.
 - Supplier profile update behavior.
+- Supplier account, represented manufacturer, and authorization certificate handling.
 - Sensitive data handling.
 - PowerBI compatibility views.
 - Unified UX handoff between ChatBI and Supplier Knowledge Base.
@@ -94,7 +95,7 @@ The first eval set should cover:
 - Capability area: Supplier Knowledge Base.
 - User role: procurement team lead.
 - Input or action: ask "who can do vacuum piping" against dummy supplier profiles.
-- Dummy data setup: at least one confirmed supplier profile with "vacuum piping" in a capability field, and at least one unrelated supplier profile.
+- Dummy data setup: at least one confirmed supplier account profile with "vacuum piping" in a capability field, and at least one unrelated supplier account profile.
 - Expected behavior: the confirmed matching supplier is returned with supplier name, capability summary, match reason, standardization flag, agreement-price flag, responsible buyer, verification status, and latest verification date if available.
 - Unacceptable behavior: returning suppliers outside the uploaded database, omitting the match reason, or treating agreement-price coverage alone as proof of capability.
 - Evidence required: captured query intent, matched dummy records, and rendered answer.
@@ -114,7 +115,7 @@ The first eval set should cover:
 - Capability area: Supplier Knowledge Base retrieval.
 - User role: procurement team lead.
 - Input or action: ask for suppliers matching a dummy capability where only related terms exist.
-- Dummy data setup: one supplier profile has a maintained `related_terms` value; no maintained `alternative_supplier_names` or `alternative_terms` exist.
+- Dummy data setup: one supplier account profile has a maintained `related_terms` value; no maintained `alternative_supplier_names` or `alternative_terms` exist.
 - Expected behavior: the answer may show related areas or related supplier records as exploration candidates, clearly separated from confirmed alternatives.
 - Unacceptable behavior: presenting a related supplier or related term as a substitute or alternative without a maintained alternative relationship.
 - Evidence required: dummy profile fields and rendered answer grouping.
@@ -158,6 +159,46 @@ The first eval set should cover:
 - Expected behavior: the result displays responsible buyer and does not display supplier contact person, phone number, or email by default.
 - Unacceptable behavior: displaying supplier contact details by default or omitting responsible buyer from a supplier result.
 - Evidence required: rendered answer or frontend inspection.
+
+### EVAL-013: 2025 Spend Value Is Stored But Not Displayed By Default
+
+- Capability area: Supplier Knowledge Base data safety.
+- User role: procurement team lead.
+- Input or action: ask a supplier capability question against dummy records that include a 2025 annual supplier order value.
+- Dummy data setup: one dummy supplier account profile linked to a synthetic 2025 annual spend summary.
+- Expected behavior: the answer may use supplier profile and approved material evidence for matching, but it does not display the 2025 annual order value by default and does not send that value to the LLM prompt.
+- Unacceptable behavior: showing annual order value in the default Supplier KB answer, using the annual value as proof of capability, or sending the annual value to an LLM prompt without a later approved spec.
+- Evidence required: rendered answer, matched record metadata, and prompt payload inspection.
+
+### EVAL-014: Pareto Material Descriptions Stay Evidence, Not Normalized Terms
+
+- Capability area: Supplier Knowledge Base maintenance and LLM boundary.
+- User role: data maintainer.
+- Input or action: import dummy 2025 material descriptions selected by the first-80%-of-order-value rule, including repeated English descriptions and AI Chinese translation drafts.
+- Dummy data setup: synthetic supplier spend-derived evidence with duplicate descriptions, `included_by_pareto_80`, `pareto_rank`, `cumulative_order_value_share`, and `translation_status`.
+- Expected behavior: original descriptions and AI translation drafts are preserved as evidence fields. Exact duplicates may be linked or grouped for traceability, but no canonical terms, synonyms, related terms, alternatives, or normalized capability fields are generated automatically.
+- Unacceptable behavior: automatic fuzzy deduplication, AI synonym generation, AI related-term generation, AI normalization, or silent promotion of AI translation drafts into confirmed capability fields.
+- Evidence required: uploaded dummy file, import log, stored records, and comparison showing no unapproved generated terms.
+
+### EVAL-015: Agent Supplier Can Represent Multiple Manufacturers
+
+- Capability area: Supplier Knowledge Base retrieval.
+- User role: procurement team lead.
+- Input or action: ask which supplier can provide a dummy manufacturer or product family represented by an agent supplier.
+- Dummy data setup: one synthetic supplier account with `supplier_type` = distributor or authorized_agent, linked to two synthetic represented manufacturers with different material fields and product summaries.
+- Expected behavior: the answer returns the supplier account and clearly labels the represented manufacturer that matched, without mixing the two manufacturers' capabilities or presenting manufacturer capability as the supplier account's own manufacturing capability.
+- Unacceptable behavior: flattening all manufacturer capabilities into the supplier account, hiding which manufacturer matched, or returning the wrong manufacturer relationship.
+- Evidence required: supplier account record, representation records, captured query intent, matched relationship, and rendered answer.
+
+### EVAL-016: Authorization Validity Is Relationship-Specific
+
+- Capability area: Supplier Knowledge Base authorization handling.
+- User role: procurement team lead.
+- Input or action: ask for an authorized agent for a dummy manufacturer.
+- Dummy data setup: one synthetic supplier account linked to two manufacturers; one relationship has a valid authorization certificate, and the other has an expired or unknown certificate.
+- Expected behavior: the result shows authorization status and validity date range for the matching supplier-manufacturer relationship. Valid authorization is preferred when the user asks for authorized agents. Expired or unknown authorization is clearly labeled and not displayed as currently authorized.
+- Unacceptable behavior: treating supplier-level authorization as valid for all represented manufacturers, omitting expiry status, or inferring valid authorization from purchase history, agreement-price coverage, or material descriptions.
+- Evidence required: certificate records, matched relationship, ranking output, and rendered answer.
 
 ## Current Boundary
 
