@@ -224,9 +224,9 @@ ChatBI must not infer missing manufacturer values from material description, MPN
 
 The first approved BI tool families are:
 
-- order volume summary: summarize PO item count by supplier, manufacturer, buyer, WBS status, month, or other approved reporting dimensions;
-- PR lead-time summary: calculate PR lead-time statistics and classification counts by buyer, manufacturer, month, or supplier;
-- PO confirmation summary: calculate OC lead-time statistics and order-confirmation classification counts by buyer, manufacturer, month, or supplier;
+- supplier dimension summary: summarize PO item count and approved supplier-dimension attributes by supplier, buyer, manufacturer, WBS status, month, or other approved reporting dimensions;
+- manufacturer dimension summary: summarize PO item count and approved manufacturer-dimension attributes by manufacturer, buyer, supplier, WBS status, month, or other approved reporting dimensions, with explicit blank-manufacturer handling;
+- lead time summary: calculate PR lead-time and PO-confirmation lead-time statistics and classification counts by buyer, manufacturer, month, or supplier;
 - auto PO ratio summary: calculate `UC4CPIC / all` by buyer, manufacturer, month, or supplier.
 
 Exact JSON schemas for these tools are drafted in `specs/08-chatbi-tool-schemas.md`. Each schema should accept only approved dimensions, measures, filters, time ranges, and sort options.
