@@ -200,6 +200,76 @@ The first eval set should cover:
 - Unacceptable behavior: treating supplier-level authorization as valid for all represented manufacturers, omitting expiry status, or inferring valid authorization from purchase history, agreement-price coverage, or material descriptions.
 - Evidence required: certificate records, matched relationship, ranking output, and rendered answer.
 
+### EVAL-017: ChatBI Manufacturer Blank Bucket Is Explicit
+
+- Capability area: ChatBI manufacturer analytics.
+- User role: procurement leader.
+- Input or action: ask for PO item counts or auto PO ratio by manufacturer.
+- Dummy data setup: dummy PO item rows with at least one populated manufacturer and at least one blank manufacturer.
+- Expected behavior: the result includes a clearly labeled blank or unknown manufacturer bucket, or explicitly states that blank manufacturers were excluded because the user asked for that filter.
+- Unacceptable behavior: dropping blank manufacturer rows silently, inferring manufacturer from material description or Supplier KB records, or treating blank manufacturer as an ingestion failure.
+- Evidence required: dummy source rows, executed ChatBI tool parameters, result table, and answer explanation.
+
+### EVAL-018: ChatBI WBS Blank Rows Are Allowed
+
+- Capability area: ChatBI PO item analytics.
+- User role: procurement team lead.
+- Input or action: ask for PO counts or lead-time metrics with and without project/WBS filtering.
+- Dummy data setup: dummy PO item rows with project WBS values and rows where `WBS element` is blank for non-project PO.
+- Expected behavior: blank-WBS rows remain queryable and are labeled as non-project or blank WBS according to the approved field dictionary.
+- Unacceptable behavior: rejecting blank-WBS rows, classifying them as data corruption, or forcing them into a fake project.
+- Evidence required: dummy source rows, field dictionary entry, executed tool filter, and rendered answer.
+
+### EVAL-019: Auto PO Ratio Uses UC4CPIC Over All PO Items
+
+- Capability area: ChatBI auto PO ratio.
+- User role: procurement leader.
+- Input or action: ask for auto PO ratio by buyer and by manufacturer.
+- Dummy data setup: dummy PO item rows with `PO created by = UC4CPIC` on some rows and other creator values on other rows, across at least two buyers and two manufacturers.
+- Expected behavior: the numerator is the count of filtered PO item rows created by `UC4CPIC`; the denominator is the count of all filtered PO item rows at PO-item grain.
+- Unacceptable behavior: using PO header count when item grain is required, using order value weighting without an approved spec, excluding non-UC4 rows from the denominator, or sending raw rows to the LLM.
+- Evidence required: dummy expected-ratio calculation, executed backend tool or SQL view result, captured LLM payload showing no raw rows, and rendered answer.
+
+### EVAL-020: Lead Time Metrics Identify PR Versus OC Logic
+
+- Capability area: ChatBI lead-time reporting.
+- User role: procurement leader.
+- Input or action: ask for lead-time performance by buyer or manufacturer.
+- Dummy data setup: dummy PO item rows with `PR Date`, `Doc. Date`, `order confirmatioin date`, missing confirmation dates, and delivered-without-OC examples.
+- Expected behavior: ChatBI states whether the answer uses PR lead time, OC lead time, or both. PR lead time uses working days from PR date to PO document date minus one. OC lead time uses working days from PO document date to order confirmation date minus one. Missing dates are classified according to the ChatBI spec.
+- Unacceptable behavior: mixing PR and OC lead-time definitions without labeling, counting missing PR dates as zero, dropping missing OC rows silently, or asking the LLM to calculate lead time from raw rows.
+- Evidence required: dummy expected calculation, backend result, answer text, and source traceability metadata.
+
+### EVAL-021: ChatBI And Supplier KB Databases Are Isolated
+
+- Capability area: data architecture and safety.
+- User role: developer.
+- Input or action: inspect the schema, migrations, connection configuration, or query code after database work begins.
+- Dummy data setup: separate dummy ChatBI and Supplier KB datasets.
+- Expected behavior: ChatBI reporting tables/views and Supplier KB knowledge tables are in separate database boundaries or equivalent isolated schemas with no shared mutable business tables. Any cross-capability link is absent unless a later approved bridge spec exists.
+- Unacceptable behavior: joining ChatBI supplier dimensions directly to Supplier KB profiles in the MVP, writing ChatBI imports into Supplier KB tables, or using Supplier KB manufacturer records to fill blank ChatBI manufacturer fields.
+- Evidence required: schema files, migration scripts, connection configuration, and query/tool implementation review.
+
+### EVAL-022: Canonical ChatBI Excel Imports Without Excel Recalculation
+
+- Capability area: ChatBI data ingestion.
+- User role: developer.
+- Input or action: import a dummy canonical ChatBI Excel workbook into SQL Server staging.
+- Dummy data setup: dummy workbook shaped like the current `PO List` source, with calculated compatibility values for `Combine`, reporting month, department, PR lead time, PR classification, OC lead time, and OC classification.
+- Expected behavior: the import script reads stored workbook values and loads them into SQL staging with import batch metadata. It does not require opening Excel or recalculating formulas during import.
+- Unacceptable behavior: depending on Excel desktop automation for formula recalculation during import, importing stale formula text as official values, or failing when formula cells are stored as values.
+- Evidence required: dummy workbook, import log, staging row count, imported compatibility values, and import batch metadata.
+
+### EVAL-023: SQL Reporting Layer Owns Official Formula Logic
+
+- Capability area: ChatBI reporting correctness.
+- User role: procurement leader.
+- Input or action: ask for lead-time classification or auto PO ratio after dummy data is imported.
+- Dummy data setup: dummy SQL staging rows imported from canonical ChatBI Excel, including compatibility formula-column values for reconciliation.
+- Expected behavior: ChatBI uses SQL views, stored procedures, or backend-owned query logic for official lead-time classifications and auto PO ratio. Compatibility values may be compared for validation but are not blindly trusted as the only source of truth.
+- Unacceptable behavior: ChatBI answers directly from arbitrary Excel formula columns without SQL/backend validation, recalculates metrics in the LLM, or lets PowerBI-only formulas define untested ChatBI behavior.
+- Evidence required: executed ChatBI tool name, SQL/backend logic reference, expected dummy calculation, answer text, and reconciliation output when available.
+
 ## Current Boundary
 
-Detailed eval cases depend on future domain specs. This file currently defines the required evaluation structure and the first safety-oriented cases.
+Additional eval cases depend on future domain specs. This file currently defines the required evaluation structure, the first safety-oriented cases, Supplier KB MVP cases, and the first ChatBI PO-item analytics cases.

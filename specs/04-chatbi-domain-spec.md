@@ -61,6 +61,155 @@ For every exposed field, the dictionary should eventually include:
 - Data type or expected format.
 - Whether the field is allowed in ChatBI answers.
 
+## Current ChatBI Data Preparation Source
+
+The first concrete ChatBI data-preparation reference is the locally saved workbook `data/raw/email-attachments/2026-05-28-newchatbi-data-prep/chatbi data sample.xlsx`.
+
+This workbook is treated as a PowerBI/SAP-source interpretation aid, not as a committed development fixture. It contains one `PO List` sheet with SAP-style PO item fields, field notes, and formulas that document current PowerBI logic. The workbook itself is under `data/raw/`, is ignored by git, and must not be committed.
+
+The source should be used to derive:
+
+- candidate ChatBI fact grain;
+- source field names and business meanings;
+- current metric formulas;
+- caveats about incomplete fields.
+
+Development and automated evaluation must still use representative dummy data.
+
+## Transitional Data Pipeline
+
+The MVP should respect the current PowerBI workflow by using a canonical ChatBI Excel workbook as a transition interface.
+
+The intended future pipeline is:
+
+`SAP export -> SAP-processing script -> canonical ChatBI Excel -> SQL import script -> ChatBI SQL reporting layer`
+
+The SAP-processing script is not part of the current implementation boundary. It should be developed later as a separate work item after the target workbook shape, dummy data, and import rules are specified.
+
+The canonical ChatBI Excel should stay close to the current PowerBI source format so existing PowerBI work and manual review remain usable during migration. It may contain calculated compatibility columns matching current PowerBI logic.
+
+ChatBI's official answer source should be the SQL reporting layer, not ad hoc SAP exports and not live Excel formula recalculation.
+
+## ChatBI and Supplier KB Separation
+
+ChatBI and the Supplier Knowledge Base must use fully separated database boundaries.
+
+For ChatBI, supplier and manufacturer fields are analytical dimensions derived from procurement reporting sources such as SAP exports and existing PowerBI data sources. They are not Supplier Knowledge Base supplier profiles, represented-manufacturer records, authorization records, capability fields, or contact records.
+
+For the Supplier Knowledge Base, supplier and manufacturer records are maintained knowledge objects with their own ownership, verification status, and retrieval rules. They must not be silently overwritten by ChatBI reporting imports.
+
+The first version must not directly join ChatBI tables to Supplier KB tables. Any future bridge between both capabilities requires a later approved spec that defines mapping ownership, data sensitivity, refresh behavior, and user-visible labeling.
+
+## MVP Analytics Scope
+
+The first ChatBI version should focus on PO item analytics for procurement leaders and team leads. The approved first-version data areas are:
+
+- supplier dimension data;
+- manufacturer dimension data;
+- lead time data;
+- auto PO ratio data, defined as UC4-created PO items divided by all PO items.
+
+These areas should support analysis by buyer and by manufacturer. Supplier-level grouping is also needed for supplier dimension exploration, but Supplier Knowledge Base capability search remains out of scope for ChatBI.
+
+## Initial Fact Grain
+
+The initial ChatBI fact grain is one purchase order item row.
+
+The current PowerBI-derived unique key is `Combine`, calculated from PO document number plus PO item number. In the workbook this is represented by the formula `VALUE(Doc. No.) & VALUE(Item)`.
+
+The durable database design should preserve the original `Doc. No.` and `Item` fields separately and may also store a generated PO-item key for convenience. The generated key must not replace the source identifiers.
+
+## Initial Dimensions
+
+The first ChatBI dataset should expose these analytical dimensions:
+
+| Dimension | Source fields | MVP decision |
+| --- | --- | --- |
+| Buyer | `PGr`; future buyer mapping table | `PGr` is the first stable buyer key. The workbook note says each purchasing group maps uniquely to a buyer, but the buyer-name mapping is not included in the file and should be maintained separately. |
+| Department | `Department` formula from `PGr` | Department can be derived from the current PGr list logic for PUL1/PUL2 reporting, but the mapping should become a maintained reference table before production use. |
+| Supplier | `Vendor`, `Name 1` | ChatBI supplier dimension means reporting supplier account/code and supplier name from the procurement source. It is not the Supplier KB profile. |
+| Manufacturer | `Manufactur` | Preserve the source header spelling in source metadata, but expose a canonical business name such as `manufacturer_name` in application-facing metadata. Blank values are allowed. |
+| Material | `Material`, `Short Text`, `MPN`, `MTyp` | Material fields support filtering and traceability. They must not be used to infer Supplier KB capabilities or represented manufacturers. |
+| WBS/project | `WBS element` | WBS can be blank for non-project PO rows. Blank WBS is not a data error. When present, the current note indicates the WBS may encode project number, station number, and mechanical/electrical suffix. |
+| Time | `Doc. Date`, derived `Date` | `Doc. Date` is the PO document date. The current `Date` field is a reporting month label such as `CM YYYY-M`. |
+| Plant and MRP | `Plant`, `MRP Type` | Keep for filtering and traceability if present. |
+
+## Initial Measures
+
+The first ChatBI measures should be implemented as backend-owned BI tools, SQL views, stored procedures, or trusted query logic. The LLM must not write SQL.
+
+Existing PowerBI formula columns should be migrated deliberately:
+
+- The future SAP-processing script may calculate formula-column values into the canonical ChatBI Excel for compatibility with current PowerBI and manual checking.
+- SQL staging may store those calculated compatibility values for reconciliation.
+- ChatBI-facing SQL views or backend tools should own the official measure and classification logic.
+- The system should not depend on Excel opening or recalculating formulas during automated import.
+
+### Lead Time
+
+The workbook documents two lead-time measures:
+
+- PR lead time: working days from `PR Date` to `Doc. Date`, minus one day. Rows with missing or invalid PR date are not counted as valid lead-time records.
+- OC lead time: working days from `Doc. Date` to `order confirmatioin date`, minus one day. Rows with no order confirmation date should be classified instead of silently dropped.
+
+The current PR classification buckets are:
+
+- `0<=X<=3`;
+- `3<X<=7`;
+- `>7days`;
+- `not statistic`.
+
+The current OC classification buckets are:
+
+- `<=3`;
+- `3<X<=7`;
+- `>7`;
+- `no order confirmation`;
+- `Delivered without OC`.
+
+ChatBI answers must state whether a lead-time result is based on PR lead time, OC lead time, or both.
+
+For the MVP, working-day calculations should match Excel `NETWORKDAYS` semantics: Monday through Friday working days, with no public-holiday or company-calendar adjustment. More precise calendar handling is deferred.
+
+### Auto PO Ratio
+
+Auto PO ratio is defined as:
+
+`count of PO item rows where PO created by = UC4CPIC / count of all PO item rows in the same filter context`
+
+The denominator is all PO item rows after the user's filters are applied. The numerator is the subset created by `UC4CPIC`.
+
+The MVP must support auto PO ratio by:
+
+- buyer, using `PGr` and later buyer-name mapping;
+- manufacturer, using `Manufactur`, with blank manufacturer values handled explicitly.
+
+The default ratio should be count-based at PO item grain, not value-weighted. A value-weighted variant would require a later spec.
+
+## Null and Incomplete Data Handling
+
+The first version must treat known blank fields as business caveats, not ingestion failures:
+
+- `Manufactur` may be blank because dummy material numbers or incomplete source records do not carry manufacturer values.
+- `WBS element` may be blank because some PO rows are not project-related.
+- Missing `order confirmatioin date` should be classified as `no order confirmation` unless the delivered-without-OC condition applies.
+- Missing or invalid `PR Date` should exclude the row from valid PR lead-time calculations and classify it as `not statistic`.
+
+ChatBI results grouped by manufacturer should either show a clearly labeled blank/unknown manufacturer bucket or state that blank manufacturers were excluded. The default should be to include a labeled blank/unknown bucket so users see the data quality impact.
+
+ChatBI must not infer missing manufacturer values from material description, MPN, supplier name, or Supplier Knowledge Base records in the MVP.
+
+## First BI Tool Families
+
+The first approved BI tool families are:
+
+- supplier dimension summary: summarize PO item count and optional order value by supplier and filter context;
+- manufacturer dimension summary: summarize PO item count and optional order value by manufacturer and filter context;
+- lead time summary: calculate PR and OC lead-time statistics and classification counts by buyer, manufacturer, month, or supplier;
+- auto PO ratio summary: calculate `UC4CPIC / all` by buyer, manufacturer, month, or supplier.
+
+Exact JSON schemas for these tools are still pending. Each schema should accept only approved dimensions, measures, filters, time ranges, and sort options.
+
 ## Result Experience
 
 Every ChatBI response should start with one sentence explaining how the system understood the user's natural language request.
@@ -75,25 +224,33 @@ Fields shown in the result should support interactive tooltips. A tooltip should
 
 ## Current Decision Boundary
 
-ChatBI implementation is paused until the domain is specified through SDD conversations. The next ChatBI conversations should define:
+ChatBI implementation remains paused until the first tool schemas, dummy data, and evaluation cases are explicit enough to test. The current approved direction is the PO-item analytics MVP described above.
+
+The next ChatBI conversations should define:
 
 - Priority questions users want to ask.
-- Metrics and definitions users already trust.
-- Source systems, files, PowerBI datasets, or reports involved.
+- Canonical ChatBI Excel target columns and validation rules.
+- SQL staging import rules for the canonical ChatBI Excel workbook.
+- Exact tool JSON schemas for supplier, manufacturer, lead-time, and auto PO ratio summaries.
+- Dummy PO item dataset structure for development.
 - Required answer format.
 - Permission and sensitivity boundaries.
 - Cases where the assistant should refuse, ask for clarification, or show uncertainty.
-- The first approved BI tools and their JSON schemas.
-- The first field dictionary entries derived from SAP exports or existing BI reports.
+- Field dictionary entries for the approved MVP fields.
 
 ## Candidate Question Categories
 
-These are candidate categories, not approved requirements:
+These are candidate categories. The first four are now approved for MVP specification work, but still require dummy data and eval cases before implementation:
 
-- Supplier performance.
-- Purchase order status.
-- Cost or price trend analysis.
-- Project purchasing overview.
+- Supplier dimension reporting.
+- Manufacturer dimension reporting.
+- Lead-time reporting.
+- Auto PO ratio reporting.
+
+These remain future candidate categories, not approved MVP requirements:
+
+- Cost or price trend analysis beyond optional order-value summaries.
+- Project purchasing overview beyond WBS filtering and blank-WBS handling.
 - Delivery or quality risk.
 - Data quality checks.
 
@@ -121,6 +278,8 @@ Real company data should be introduced only in the company-approved environment 
 - What are the top five ChatBI questions for procurement leaders?
 - Which existing PowerBI report is the best starting reference?
 - Should answers be mostly Chinese, English, or bilingual?
-- How should the system handle incomplete or stale data?
 - Which company-provided internal LLM API should be used first?
-- Which BI tools should be hard-coded for the first version?
+- What exact buyer-name mapping should be maintained for `PGr`?
+- What user-facing label should be used for blank manufacturer rows?
+- Which order-value fields may be displayed by default, and which require permission controls?
+- Which SAP export file shape should be mapped first into the canonical ChatBI Excel workbook?
