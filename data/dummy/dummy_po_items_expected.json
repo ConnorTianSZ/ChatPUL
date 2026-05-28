@@ -1,0 +1,138 @@
+{
+  "row_count": 300,
+  "seed": 20260528,
+  "auto_po_ratio": {
+    "overall": {
+      "uc4_count": 104,
+      "total": 300,
+      "ratio": 0.346667
+    },
+    "by_buyer": {
+      "MFA": {
+        "uc4_count": 29,
+        "total": 80,
+        "ratio": 0.3625
+      },
+      "MFB": {
+        "uc4_count": 26,
+        "total": 71,
+        "ratio": 0.366197
+      },
+      "MFC": {
+        "uc4_count": 22,
+        "total": 71,
+        "ratio": 0.309859
+      },
+      "MFD": {
+        "uc4_count": 27,
+        "total": 78,
+        "ratio": 0.346154
+      }
+    },
+    "by_manufacturer": {
+      "DummyMfr-X": {
+        "uc4_count": 33,
+        "total": 84,
+        "ratio": 0.392857
+      },
+      "DummyMfr-Y": {
+        "uc4_count": 23,
+        "total": 87,
+        "ratio": 0.264368
+      },
+      "DummyMfr-Z": {
+        "uc4_count": 30,
+        "total": 79,
+        "ratio": 0.379747
+      },
+      "<BLANK>": {
+        "uc4_count": 18,
+        "total": 50,
+        "ratio": 0.36
+      }
+    }
+  },
+  "manufacturer_distribution": {
+    "DummyMfr-X": 84,
+    "DummyMfr-Y": 87,
+    "DummyMfr-Z": 79,
+    "<BLANK>": 50
+  },
+  "wbs_distribution": {
+    "with_wbs": 200,
+    "blank_wbs": 100
+  },
+  "pr_lead_time": {
+    "buckets": {
+      "0<=X<=3": 68,
+      "3<X<=7": 72,
+      ">7days": 74,
+      "not statistic": 86
+    },
+    "by_buyer": {
+      "MFA": {
+        "0<=X<=3": 18,
+        "3<X<=7": 18,
+        ">7days": 19,
+        "not statistic": 25
+      },
+      "MFB": {
+        "0<=X<=3": 19,
+        "3<X<=7": 18,
+        ">7days": 22,
+        "not statistic": 12
+      },
+      "MFC": {
+        "0<=X<=3": 19,
+        "3<X<=7": 14,
+        ">7days": 16,
+        "not statistic": 22
+      },
+      "MFD": {
+        "0<=X<=3": 12,
+        "3<X<=7": 22,
+        ">7days": 17,
+        "not statistic": 27
+      }
+    }
+  },
+  "oc_lead_time": {
+    "buckets": {
+      "<=3": 68,
+      "3<X<=7": 42,
+      ">7": 40,
+      "no order confirmation": 45,
+      "Delivered without OC": 105
+    },
+    "by_buyer": {
+      "MFA": {
+        "<=3": 20,
+        "3<X<=7": 8,
+        ">7": 13,
+        "no order confirmation": 9,
+        "Delivered without OC": 30
+      },
+      "MFB": {
+        "<=3": 15,
+        "3<X<=7": 11,
+        ">7": 9,
+        "no order confirmation": 7,
+        "Delivered without OC": 29
+      },
+      "MFC": {
+        "<=3": 18,
+        "3<X<=7": 6,
+        ">7": 11,
+        "no order confirmation": 10,
+        "Delivered without OC": 26
+      },
+      "MFD": {
+        "<=3": 15,
+        "3<X<=7": 17,
+        ">7": 7,
+        "no order confirmation": 19,
+        "Delivered without OC": 20
+      }
+    }
+  }
+}
