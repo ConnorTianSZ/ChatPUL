@@ -4,7 +4,7 @@ Spec-first repository for a procurement-oriented internal tool that combines Cha
 
 ## Current Status
 
-This repository has moved from SDD bootstrap into the first backend implementation slice.
+This repository has moved from SDD bootstrap into the first backend implementation slice and the first local frontend workbench slice.
 
 Implemented so far:
 
@@ -13,9 +13,10 @@ Implemented so far:
 - Minimal ChatBI field dictionary metadata for labels, future tooltips, and source traceability.
 - SQL Server dummy reporting assets for the approved ChatBI PO-item shape.
 - Optional DeepSeek V4 Flash intent parsing for dummy-data local testing.
+- Local React/Vite ChatBI workbench for calling `/api/chatbi/ask` and inspecting results/source trace.
 - Pytest coverage for fixture generation, tool validation, calculations, API behavior, and source trace structure.
 
-No frontend UI, Supplier Knowledge Base implementation, production SQL import path, or real company data handling has been implemented yet.
+No Supplier Knowledge Base implementation, production SQL import path, production auth, or real company data handling has been implemented yet.
 
 ## Confirmed Technical Stack
 
@@ -26,6 +27,8 @@ The approved backend stack is Python + FastAPI + pytest.
 - SQL Server remains the target database platform for company-environment validation.
 
 The first approved backend endpoints are `POST /api/chatbi/tools/execute` and `POST /api/chatbi/ask`, scoped by `specs/09-chatbi-backend-tool-slice.md` and `specs/10-chatbi-sqlserver-and-llm-milestone.md`.
+
+The first approved frontend workbench is scoped by `specs/11-chatbi-frontend-workbench.md`.
 
 ## Product Direction
 

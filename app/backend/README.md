@@ -18,3 +18,13 @@ Current boundaries:
 - Natural-language LLM parsing is disabled by default with `CHATBI_LLM_ENABLED=false`.
 - SQL Server dummy reporting is available through `DATA_MODE=sqlserver` after local SQL setup.
 - No real company data should be used on the development machine.
+
+## Local Run
+
+From the repository root:
+
+```powershell
+python -m uvicorn app.backend.main:app --host 127.0.0.1 --port 8000
+```
+
+The frontend Vite dev server proxies `/api` to this backend during local workbench testing.
