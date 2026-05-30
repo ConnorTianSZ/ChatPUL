@@ -305,6 +305,18 @@ def empty_oc_bucket_counts():
 def compute_expected_stats(rows):
     manufacturer_distribution = {"DummyMfr-X": 0, "DummyMfr-Y": 0, "DummyMfr-Z": 0, "<BLANK>": 0}
     wbs_distribution = {"with_wbs": 0, "blank_wbs": 0}
+    supplier_distribution = {
+        str(80000001 + index): {"supplier_name": supplier_name, "po_item_count": 0}
+        for index, supplier_name in enumerate(SUPPLIER_NAMES)
+    }
+    supplier_by_buyer = {
+        buyer: {str(80000001 + index): 0 for index in range(len(SUPPLIER_NAMES))}
+        for buyer in BUYERS
+    }
+    manufacturer_by_buyer = {
+        manufacturer: {buyer: 0 for buyer in BUYERS}
+        for manufacturer in ["DummyMfr-X", "DummyMfr-Y", "DummyMfr-Z", "<BLANK>"]
+    }
 
     overall_uc4 = 0
     by_buyer_counts = {buyer: {"uc4_count": 0, "total": 0} for buyer in BUYERS}
@@ -318,9 +330,18 @@ def compute_expected_stats(rows):
     oc_buckets = empty_oc_bucket_counts()
     pr_by_buyer = {buyer: empty_pr_bucket_counts() for buyer in BUYERS}
     oc_by_buyer = {buyer: empty_oc_bucket_counts() for buyer in BUYERS}
+    pr_by_manufacturer = {
+        manufacturer: empty_pr_bucket_counts()
+        for manufacturer in ["DummyMfr-X", "DummyMfr-Y", "DummyMfr-Z", "<BLANK>"]
+    }
+    oc_by_manufacturer = {
+        manufacturer: empty_oc_bucket_counts()
+        for manufacturer in ["DummyMfr-X", "DummyMfr-Y", "DummyMfr-Z", "<BLANK>"]
+    }
 
     for row in rows:
         buyer = row["PGr"]
+        supplier_code = row["Vendor"]
         manufacturer = blank_bucket(row["Manufactur"])
         is_uc4 = row["PO created by"] == "UC4CPIC"
 
@@ -329,6 +350,9 @@ def compute_expected_stats(rows):
 
         by_buyer_counts[buyer]["total"] += 1
         by_manufacturer_counts[manufacturer]["total"] += 1
+        supplier_distribution[supplier_code]["po_item_count"] += 1
+        supplier_by_buyer[buyer][supplier_code] += 1
+        manufacturer_by_buyer[manufacturer][buyer] += 1
         if is_uc4:
             by_buyer_counts[buyer]["uc4_count"] += 1
             by_manufacturer_counts[manufacturer]["uc4_count"] += 1
@@ -345,6 +369,8 @@ def compute_expected_stats(rows):
         oc_buckets[oc_bucket] += 1
         pr_by_buyer[buyer][pr_bucket] += 1
         oc_by_buyer[buyer][oc_bucket] += 1
+        pr_by_manufacturer[manufacturer][pr_bucket] += 1
+        oc_by_manufacturer[manufacturer][oc_bucket] += 1
 
     by_buyer = {}
     for buyer in BUYERS:
@@ -364,15 +390,20 @@ def compute_expected_stats(rows):
             "by_buyer": by_buyer,
             "by_manufacturer": by_manufacturer,
         },
+        "supplier_distribution": supplier_distribution,
+        "supplier_by_buyer": supplier_by_buyer,
+        "manufacturer_by_buyer": manufacturer_by_buyer,
         "manufacturer_distribution": manufacturer_distribution,
         "wbs_distribution": wbs_distribution,
         "pr_lead_time": {
             "buckets": pr_buckets,
             "by_buyer": pr_by_buyer,
+            "by_manufacturer": pr_by_manufacturer,
         },
         "oc_lead_time": {
             "buckets": oc_buckets,
             "by_buyer": oc_by_buyer,
+            "by_manufacturer": oc_by_manufacturer,
         },
     }
 
@@ -474,6 +505,32 @@ def verify_outputs(rows, expected):
         and sum(expected["oc_lead_time"]["buckets"].values()) == ROW_COUNT
     )
     checks.append(("JSON ratios recompute correctly and bucket totals match", ratios_ok and totals_ok))
+    checks.append(
+        (
+            "extended backend tool ground truth totals match",
+            sum(entry["po_item_count"] for entry in expected["supplier_distribution"].values()) == ROW_COUNT
+            and sum(
+                sum(supplier_counts.values())
+                for supplier_counts in expected["supplier_by_buyer"].values()
+            )
+            == ROW_COUNT
+            and sum(
+                sum(buyer_counts.values())
+                for buyer_counts in expected["manufacturer_by_buyer"].values()
+            )
+            == ROW_COUNT
+            and sum(
+                sum(bucket_counts.values())
+                for bucket_counts in expected["pr_lead_time"]["by_manufacturer"].values()
+            )
+            == ROW_COUNT
+            and sum(
+                sum(bucket_counts.values())
+                for bucket_counts in expected["oc_lead_time"]["by_manufacturer"].values()
+            )
+            == ROW_COUNT,
+        )
+    )
 
     failed = []
     for label, ok in checks:

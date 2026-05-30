@@ -52,6 +52,124 @@
       }
     }
   },
+  "supplier_distribution": {
+    "80000001": {
+      "supplier_name": "Dummy Supplier A",
+      "po_item_count": 30
+    },
+    "80000002": {
+      "supplier_name": "Dummy Supplier B",
+      "po_item_count": 30
+    },
+    "80000003": {
+      "supplier_name": "Dummy Supplier C",
+      "po_item_count": 30
+    },
+    "80000004": {
+      "supplier_name": "Dummy Supplier D",
+      "po_item_count": 30
+    },
+    "80000005": {
+      "supplier_name": "Dummy Supplier E",
+      "po_item_count": 30
+    },
+    "80000006": {
+      "supplier_name": "Dummy Supplier F",
+      "po_item_count": 30
+    },
+    "80000007": {
+      "supplier_name": "Dummy Supplier G",
+      "po_item_count": 30
+    },
+    "80000008": {
+      "supplier_name": "Dummy Supplier H",
+      "po_item_count": 30
+    },
+    "80000009": {
+      "supplier_name": "Dummy Supplier I",
+      "po_item_count": 30
+    },
+    "80000010": {
+      "supplier_name": "Dummy Supplier J",
+      "po_item_count": 30
+    }
+  },
+  "supplier_by_buyer": {
+    "MFA": {
+      "80000001": 6,
+      "80000002": 6,
+      "80000003": 11,
+      "80000004": 8,
+      "80000005": 15,
+      "80000006": 6,
+      "80000007": 8,
+      "80000008": 6,
+      "80000009": 6,
+      "80000010": 8
+    },
+    "MFB": {
+      "80000001": 5,
+      "80000002": 10,
+      "80000003": 1,
+      "80000004": 8,
+      "80000005": 3,
+      "80000006": 8,
+      "80000007": 9,
+      "80000008": 9,
+      "80000009": 7,
+      "80000010": 11
+    },
+    "MFC": {
+      "80000001": 11,
+      "80000002": 1,
+      "80000003": 12,
+      "80000004": 4,
+      "80000005": 5,
+      "80000006": 7,
+      "80000007": 7,
+      "80000008": 8,
+      "80000009": 10,
+      "80000010": 6
+    },
+    "MFD": {
+      "80000001": 8,
+      "80000002": 13,
+      "80000003": 6,
+      "80000004": 10,
+      "80000005": 7,
+      "80000006": 9,
+      "80000007": 6,
+      "80000008": 7,
+      "80000009": 7,
+      "80000010": 5
+    }
+  },
+  "manufacturer_by_buyer": {
+    "DummyMfr-X": {
+      "MFA": 19,
+      "MFB": 17,
+      "MFC": 26,
+      "MFD": 22
+    },
+    "DummyMfr-Y": {
+      "MFA": 30,
+      "MFB": 18,
+      "MFC": 13,
+      "MFD": 26
+    },
+    "DummyMfr-Z": {
+      "MFA": 18,
+      "MFB": 22,
+      "MFC": 22,
+      "MFD": 17
+    },
+    "<BLANK>": {
+      "MFA": 13,
+      "MFB": 14,
+      "MFC": 10,
+      "MFD": 13
+    }
+  },
   "manufacturer_distribution": {
     "DummyMfr-X": 84,
     "DummyMfr-Y": 87,
@@ -94,6 +212,32 @@
         ">7days": 17,
         "not statistic": 27
       }
+    },
+    "by_manufacturer": {
+      "DummyMfr-X": {
+        "0<=X<=3": 18,
+        "3<X<=7": 21,
+        ">7days": 21,
+        "not statistic": 24
+      },
+      "DummyMfr-Y": {
+        "0<=X<=3": 22,
+        "3<X<=7": 16,
+        ">7days": 20,
+        "not statistic": 29
+      },
+      "DummyMfr-Z": {
+        "0<=X<=3": 16,
+        "3<X<=7": 18,
+        ">7days": 24,
+        "not statistic": 21
+      },
+      "<BLANK>": {
+        "0<=X<=3": 12,
+        "3<X<=7": 17,
+        ">7days": 9,
+        "not statistic": 12
+      }
     }
   },
   "oc_lead_time": {
@@ -132,6 +276,36 @@
         ">7": 7,
         "no order confirmation": 19,
         "Delivered without OC": 20
+      }
+    },
+    "by_manufacturer": {
+      "DummyMfr-X": {
+        "<=3": 15,
+        "3<X<=7": 14,
+        ">7": 13,
+        "no order confirmation": 11,
+        "Delivered without OC": 31
+      },
+      "DummyMfr-Y": {
+        "<=3": 24,
+        "3<X<=7": 9,
+        ">7": 8,
+        "no order confirmation": 16,
+        "Delivered without OC": 30
+      },
+      "DummyMfr-Z": {
+        "<=3": 18,
+        "3<X<=7": 10,
+        ">7": 12,
+        "no order confirmation": 12,
+        "Delivered without OC": 27
+      },
+      "<BLANK>": {
+        "<=3": 11,
+        "3<X<=7": 9,
+        ">7": 7,
+        "no order confirmation": 6,
+        "Delivered without OC": 17
       }
     }
   }

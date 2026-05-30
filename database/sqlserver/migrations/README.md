@@ -1,5 +1,7 @@
 # SQL Server Migrations
 
-Future schema migration scripts will live here.
+Schema migration scripts live here after spec approval.
 
-Current boundary: no schema is approved yet.
+Current approved migration:
+
+- `001_create_chatbi_dummy_reporting.sql`: creates the dummy-only ChatBI reporting schema for the first SQL Server backend slice.

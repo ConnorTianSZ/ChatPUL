@@ -110,6 +110,44 @@ class DummyPoItemGeneratorTest(unittest.TestCase):
         self.assertIn("<BLANK>", expected["manufacturer_distribution"])
         self.assertIn("<BLANK>", expected["auto_po_ratio"]["by_manufacturer"])
 
+    def test_expected_json_covers_backend_tool_ground_truth(self):
+        self.assertEqual(self.returncode, 0, self.stderr)
+        expected = json.loads(JSON_PATH.read_text(encoding="utf-8"))
+
+        self.assertEqual(sum(entry["po_item_count"] for entry in expected["supplier_distribution"].values()), 300)
+        self.assertEqual(
+            sum(sum(supplier_counts.values()) for supplier_counts in expected["supplier_by_buyer"].values()),
+            300,
+        )
+        self.assertEqual(
+            sum(
+                sum(manufacturer_counts.values())
+                for manufacturer_counts in expected["manufacturer_by_buyer"].values()
+            ),
+            300,
+        )
+        self.assertEqual(
+            sum(
+                sum(bucket_counts.values())
+                for bucket_counts in expected["pr_lead_time"]["by_manufacturer"].values()
+            ),
+            300,
+        )
+        self.assertEqual(
+            sum(
+                sum(bucket_counts.values())
+                for bucket_counts in expected["oc_lead_time"]["by_manufacturer"].values()
+            ),
+            300,
+        )
+
+        first_supplier = expected["supplier_distribution"]["80000001"]
+        self.assertEqual(first_supplier["supplier_name"], "Dummy Supplier A")
+        self.assertGreater(first_supplier["po_item_count"], 0)
+        self.assertIn("<BLANK>", expected["manufacturer_by_buyer"])
+        self.assertIn("<BLANK>", expected["pr_lead_time"]["by_manufacturer"])
+        self.assertIn("<BLANK>", expected["oc_lead_time"]["by_manufacturer"])
+
     def test_readme_mentions_each_eval_and_synthetic_data_rule(self):
         self.assertEqual(self.returncode, 0, self.stderr)
         readme = README_PATH.read_text(encoding="utf-8")

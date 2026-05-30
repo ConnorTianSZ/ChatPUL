@@ -270,6 +270,36 @@ The first eval set should cover:
 - Unacceptable behavior: ChatBI answers directly from arbitrary Excel formula columns without SQL/backend validation, recalculates metrics in the LLM, or lets PowerBI-only formulas define untested ChatBI behavior.
 - Evidence required: executed ChatBI tool name, SQL/backend logic reference, expected dummy calculation, answer text, and reconciliation output when available.
 
+### EVAL-024: ChatBI Tool Schema Is Strictly Enforced
+
+- Capability area: ChatBI BI tool boundary.
+- User role: developer.
+- Input or action: submit tool calls that (a) name a tool not listed in `specs/08-chatbi-tool-schemas.md`, (b) include a top-level property other than `tool` and `arguments`, (c) include an argument key that is not in the selected tool's JSON Schema, or (d) pass an enum value (such as `group_by`, `wbs_scope`, `lead_time_type`, or `date_field`) that is not in the approved enum list.
+- Dummy data setup: any approved tool's dummy fixture; no fixture-shape dependency.
+- Expected behavior: each call is rejected by backend schema validation before any data access. The rejection states which rule failed (unknown tool, unknown property, or unknown enum value).
+- Unacceptable behavior: silently dropping unknown properties, coercing an unknown enum to a default, executing the tool with partial arguments, or letting the LLM smuggle extra fields into `arguments`.
+- Evidence required: captured tool-call payloads, backend validation log, and rejection response.
+
+### EVAL-025: ChatBI Rejects Unsupported Metric Requests
+
+- Capability area: ChatBI scope boundary.
+- User role: procurement leader.
+- Input or action: ask a question that requires an unsupported metric, such as price trend, value-weighted automation ratio, quality risk, or delivery risk.
+- Dummy data setup: dummy PO-item fixture only; no price-trend or risk fields are available.
+- Expected behavior: the backend rejects the call or returns a structured error indicating the metric is not supported, without synthesizing an answer.
+- Unacceptable behavior: returning a fabricated price-trend, value-weighted, quality-risk, or delivery-risk result; silently substituting PO item count for an unrelated measure.
+- Evidence required: captured tool-call payload, backend rejection or error response, and backend validation log.
+
+### EVAL-026: ChatBI Result Includes Structured Source Trace
+
+- Capability area: ChatBI traceability.
+- User role: procurement leader.
+- Input or action: run any approved ChatBI tool against the dummy PO-item fixture.
+- Dummy data setup: `data/dummy/dummy_po_items.csv` and `data/dummy/dummy_po_items_expected.json`.
+- Expected behavior: the result payload includes `source_trace` with at least dataset identifier, dataset version or refresh marker, tool name, filters applied, and time range applied.
+- Unacceptable behavior: omitting `source_trace`, populating it with free-form text.
+- Evidence required: result JSON payload and backend log of the tool call.
+
 ## Current Boundary
 
 Additional eval cases depend on future domain specs. This file currently defines the required evaluation structure, the first safety-oriented cases, Supplier KB MVP cases, and the first ChatBI PO-item analytics cases.
